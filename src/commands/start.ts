@@ -26,7 +26,7 @@ export const startServer = async () => {
   );
   logger.info("start_server", result);
   const end = performance.now();
-  return end - start;
+  return Math.round(((end - start) / 1000) * 10) / 10;
 };
 
 // todo
@@ -34,9 +34,9 @@ export async function execute(interaction: CommandInteraction) {
   await interaction.deferReply();
   const res = await getServerResponse();
   if (res.online) {
-    await interaction.editReply("Server is already running");
+    await interaction.editReply("❌ Server is already running");
     return;
   }
   const time = await startServer();
-  return interaction.editReply("Server started in " + time + "ms");
+  return interaction.editReply(`Server started in **${time}** seconds`);
 }

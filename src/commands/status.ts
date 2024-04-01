@@ -75,7 +75,7 @@ export async function execute(interaction: CommandInteraction) {
       });
       const time = await startServer();
       await interaction.editReply({
-        content: `Server started in ${time}ms`,
+        content: `Server started in **${time}** seconds`,
         components: [],
       });
     } else {
