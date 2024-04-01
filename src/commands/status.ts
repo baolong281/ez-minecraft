@@ -11,7 +11,7 @@ import { config } from "../config";
 
 const host = config.HOST_IP;
 const port = 25565;
-const options = { query: true };
+const options = { query: false };
 
 export const data = new SlashCommandBuilder()
   .setName("status")
@@ -48,8 +48,8 @@ export async function execute(interaction: CommandInteraction) {
     const players = res.players?.list.map((member) => member.name_clean);
 
     return interaction.editReply(
-      `🟢 Server is online with **${playerCount}** players` +
-        (playerCount! > 0 ? "\n" + "- " + players?.join("\n- ") : "")
+      `🟢  Server is online with **${playerCount}** players` +
+        (playerCount! > 0 ? "```\n" + "- " + players?.join("\n- ") + "```" : "")
     );
   }
 
