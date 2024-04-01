@@ -8,5 +8,5 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: CommandInteraction) {
   await interaction.deferReply();
   await deployCommands({ guildId: interaction.guildId! });
-  await interaction.editReply("commands reloaded");
+  await interaction.editReply("bot commands reloaded!");
 }

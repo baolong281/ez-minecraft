@@ -13,8 +13,11 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@azure/arm-compute": "^21.5.0",
+    "@azure/identity": "^4.0.1",
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.5",
+    "node-mcstatus": "^1.1.0",
     "winston": "^3.13.0"
   },
   "scripts": {

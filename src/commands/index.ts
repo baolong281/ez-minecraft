@@ -1,10 +1,10 @@
-import * as ping from "./ping";
+import * as info from "./info";
 import * as status from "./status";
 import * as reload from "./reload";
 import * as start from "./start";
 
 const commands = {
-  ping,
+  info,
   status,
   reload,
   start,
