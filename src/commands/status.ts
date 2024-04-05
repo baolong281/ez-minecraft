@@ -61,7 +61,6 @@ export async function execute(interaction: CommandInteraction) {
     }
     }
   }
-}
   
 
   const response = await interaction.editReply({
