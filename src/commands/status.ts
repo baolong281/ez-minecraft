@@ -46,11 +46,26 @@ export async function execute(interaction: CommandInteraction) {
   const playerCount = res.players?.online;
   if (online) {
     const players = res.players?.list.map((member) => member.name_clean);
-
-    return interaction.editReply(
+    if(playerCount){
+        if(playerCount == 1){
+              return interaction.editReply(
+      `🟢  Server is online with **${playerCount}** player` +
+        (playerCount! > 0 ? "```\n" + "- " + players?.join("\n- ") + "```" : "")
+    );
+          
+    }else{
+              return interaction.editReply(
       `🟢  Server is online with **${playerCount}** players` +
         (playerCount! > 0 ? "```\n" + "- " + players?.join("\n- ") + "```" : "")
     );
+    }
+
+
+
+
+
+
+    
   }
 
   const response = await interaction.editReply({
