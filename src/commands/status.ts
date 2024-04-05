@@ -59,14 +59,10 @@ export async function execute(interaction: CommandInteraction) {
         (playerCount! > 0 ? "```\n" + "- " + players?.join("\n- ") + "```" : "")
     );
     }
-
-
-
-
-
-
-    
+    }
   }
+}
+  
 
   const response = await interaction.editReply({
     content: "Server is offline. Would you like to start the server?",
