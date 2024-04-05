@@ -6,8 +6,8 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import { JavaStatusResponse, statusJava } from "node-mcstatus";
-import { startServer } from "./start";
 import { config } from "../config";
+import { VM } from "../vm";
 
 const host = config.HOST_IP;
 const port = 25565;
@@ -83,7 +83,7 @@ export async function execute(interaction: CommandInteraction) {
         content: "Server is starting...",
         components: [],
       });
-      const time = await startServer();
+      const time = await VM.startServer();
       await interaction.editReply({
         content: `Server started in **${time}** seconds`,
         components: [],
