@@ -48,7 +48,7 @@ export async function execute(interaction: CommandInteraction) {
     const players = res.players?.list.map((member) => member.name_clean);
     const cache_time = round2((res.expires_at - Date.now()) / 1000);
     const cache_string =
-      cache_time > 0 ? ` (cached for ${round2} seconds)` : "";
+      cache_time > 0 ? ` (cache expres in **${cache_time} seconds**)` : "";
     if (playerCount && playerCount == 1) {
       return interaction.editReply(
         `🟢  Server is online with **${playerCount}** player` +
