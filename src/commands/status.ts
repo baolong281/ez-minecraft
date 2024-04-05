@@ -5,7 +5,7 @@ import {
   CommandInteraction,
   SlashCommandBuilder,
 } from "discord.js";
-import { statusJava } from "node-mcstatus";
+import { JavaStatusResponse, statusJava } from "node-mcstatus";
 import { startServer } from "./start";
 import { config } from "../config";
 
@@ -29,10 +29,10 @@ const cancel = new ButtonBuilder()
 
 const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
   confirm,
-  cancel
+  cancel,
 );
 
-export const getServerResponse = async () => {
+export const getServerResponse = async (): Promise<JavaStatusResponse> => {
   const res = await statusJava(host, port, options);
   return res;
 };
@@ -46,22 +46,22 @@ export async function execute(interaction: CommandInteraction) {
   const playerCount = res.players?.online;
   if (online) {
     const players = res.players?.list.map((member) => member.name_clean);
-    if(playerCount){
-        if(playerCount == 1){
-              return interaction.editReply(
-      `🟢  Server is online with **${playerCount}** player` +
-        (playerCount! > 0 ? "```\n" + "- " + players?.join("\n- ") + "```" : "")
-    );
-          
-    }else{
-              return interaction.editReply(
-      `🟢  Server is online with **${playerCount}** players` +
-        (playerCount! > 0 ? "```\n" + "- " + players?.join("\n- ") + "```" : "")
-    );
-    }
+    if (playerCount && playerCount == 1) {
+      return interaction.editReply(
+        `🟢  Server is online with **${playerCount}** player` +
+          (playerCount! > 0
+            ? "```\n" + "- " + players?.join("\n- ") + "```"
+            : ""),
+      );
+    } else {
+      return interaction.editReply(
+        `🟢  Server is online with **${playerCount}** players` +
+          (playerCount! > 0
+            ? "```\n" + "- " + players?.join("\n- ") + "```"
+            : ""),
+      );
     }
   }
-  
 
   const response = await interaction.editReply({
     content: "Server is offline. Would you like to start the server?",
