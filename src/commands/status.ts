@@ -36,7 +36,7 @@ export const getServerResponse = async (): Promise<JavaStatusResponse> => {
   const res = await statusJava(host, port, options);
   return res;
 };
-
+const round2 = (num: number) => Math.round(num * 10) / 10;
 // todo
 export async function execute(interaction: CommandInteraction) {
   await interaction.deferReply();
@@ -46,9 +46,13 @@ export async function execute(interaction: CommandInteraction) {
   const playerCount = res.players?.online;
   if (online) {
     const players = res.players?.list.map((member) => member.name_clean);
+    const cache_time = round2((res.expires_at - Date.now()) / 1000);
+    const cache_string =
+      cache_time > 0 ? ` (cached for ${round2} seconds)` : "";
     if (playerCount && playerCount == 1) {
       return interaction.editReply(
         `🟢  Server is online with **${playerCount}** player` +
+          cache_string +
           (playerCount! > 0
             ? "```\n" + "- " + players?.join("\n- ") + "```"
             : ""),
@@ -56,6 +60,7 @@ export async function execute(interaction: CommandInteraction) {
     } else {
       return interaction.editReply(
         `🟢  Server is online with **${playerCount}** players` +
+          cache_string +
           (playerCount! > 0
             ? "```\n" + "- " + players?.join("\n- ") + "```"
             : ""),
