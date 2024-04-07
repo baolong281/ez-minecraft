@@ -4,6 +4,8 @@ import logger from "./logger";
 import { DefaultAzureCredential } from "@azure/identity";
 import { ComputeManagementClient } from "@azure/arm-compute";
 import { statusJava } from "node-mcstatus";
+import { client } from ".";
+import { TextChannel } from "discord.js";
 class VMInstance {
   client: ComputeManagementClient;
   vmname: string;
@@ -88,6 +90,7 @@ class VMInstance {
     return this.online;
   }
 }
+
 const round2 = (num: number) => Math.round(num * 10) / 10;
 
 class ServerPoller {
@@ -114,8 +117,32 @@ class ServerPoller {
       // poll every 1:30 minutes
       this.online = res.online;
       this.expiration = res.expires_at;
-      this.players = res.players?.list.map((member) => member.name_clean);
       this.online = res.online;
+
+      const current_players = res.players?.list.map(
+        (member) => member.name_clean,
+      );
+      const prev_players = this.players;
+
+      // find differnce between current and previous players
+      const new_players = current_players?.filter(
+        (player) => !prev_players?.includes(player),
+      );
+      const left_players = prev_players?.filter(
+        (player) => !current_players?.includes(player),
+      );
+
+      const channel = client.channels.cache.get("minecraft") as TextChannel;
+      if (left_players?.length ?? 0 > 0) {
+        channel.send(`**${left_players?.join(", ")}** left the server`);
+      }
+
+      if (new_players?.length ?? 0 > 0) {
+        channel.send(`**${new_players?.join(", ")}** joined the server`);
+      }
+
+      this.players = current_players;
+
       logger.info("polling server", {
         online: this.online,
         players: this.players,
@@ -141,6 +168,8 @@ class ServerPoller {
       if ((this.players?.length ?? 0) > 0) {
         inactive = false;
       } else {
+        const channel = client.channels.cache.get("minecraft") as TextChannel;
+        channel.send("server inactive, powering off");
         logger.info("server inactive, powering off", {
           online: this.online,
           players: this.players,

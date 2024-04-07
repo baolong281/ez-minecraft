@@ -4,7 +4,7 @@ import { config } from "./config";
 import logger from "./logger";
 import commands from "./commands";
 
-const client = new Client({
+export const client = new Client({
   intents: ["Guilds", "GuildMessages"],
 });
 
