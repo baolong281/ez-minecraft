@@ -1,18 +1,19 @@
 {
+  // https://www.typescriptlang.org/tsconfig#compilerOptions
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "commonjs",
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "removeComments": true,
-    "resolveJsonModule": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
+    "lib": ["es2020"],
+    "module": "es2022",
+    "preserveConstEnums": true,
+    "moduleResolution": "node",
     "strict": true,
-    "strictNullChecks": true,
-    "skipLibCheck": true,
+    "sourceMap": true,
+    "target": "es2022",
+    "outDir": "dist",
     "types": [
       "bun-types" // add Bun global
     ]
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }

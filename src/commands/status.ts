@@ -5,13 +5,7 @@ import {
   CommandInteraction,
   SlashCommandBuilder,
 } from "discord.js";
-import { JavaStatusResponse, statusJava } from "node-mcstatus";
-import { config } from "../config";
-import { VM } from "../vm";
-
-const host = config.HOST_IP;
-const port = 25565;
-const options = { query: false };
+import { SERVER, VM } from "../vm";
 
 export const data = new SlashCommandBuilder()
   .setName("status")
@@ -32,23 +26,15 @@ const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
   cancel,
 );
 
-export const getServerResponse = async (): Promise<JavaStatusResponse> => {
-  const res = await statusJava(host, port, options);
-  return res;
-};
-const round2 = (num: number) => Math.round(num * 10) / 10;
 // todo
 export async function execute(interaction: CommandInteraction) {
   await interaction.deferReply();
-  const res = await getServerResponse();
+  const { online, players, expiration } = SERVER.getServerStatus();
 
-  const online = res.online;
-  const playerCount = res.players?.online;
   if (online) {
-    const players = res.players?.list.map((member) => member.name_clean);
-    const cache_time = round2((res.expires_at - Date.now()) / 1000);
+    const playerCount = players?.length;
     const cache_string =
-      cache_time > 0 ? ` (updates in **${cache_time} seconds**)` : "";
+      expiration > 0 ? ` (updates in **${expiration} seconds**)` : "";
     if (playerCount && playerCount == 1) {
       return interaction.editReply(
         `🟢  Server is online with **${playerCount}** player` +

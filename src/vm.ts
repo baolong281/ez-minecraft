@@ -1,50 +1,166 @@
 import { config } from "./config";
-import { getServerResponse } from "./commands/status";
 import logger from "./logger";
 
 import { DefaultAzureCredential } from "@azure/identity";
 import { ComputeManagementClient } from "@azure/arm-compute";
-
+import { statusJava } from "node-mcstatus";
 class VMInstance {
-  credentials: DefaultAzureCredential;
   client: ComputeManagementClient;
   vmname: string;
+  online: boolean | undefined;
 
-  constructor() {
-    this.credentials = new DefaultAzureCredential();
-    this.client = new ComputeManagementClient(this.credentials, config.SUB_ID);
+  private constructor(client: ComputeManagementClient) {
+    this.client = client;
     this.vmname = "minecraftez";
+    this.online = undefined;
+  }
+
+  private static createClient() {
+    const credentials = new DefaultAzureCredential();
+    const client = new ComputeManagementClient(credentials, config.SUB_ID);
+    return client;
+  }
+
+  public static async getInstance() {
+    const client = this.createClient();
+    const out = new VMInstance(client);
+    out.online = await out.getStatus();
+    return out;
   }
 
   public async startServer() {
-    const res = await getServerResponse();
-    if (res.online) {
+    if (this.online) {
       return -1;
     }
     const start = performance.now();
-    const result = await this.client.virtualMachines.beginStartAndWait(
+    logger.info("starting server...");
+    await this.client.virtualMachines.beginStartAndWait(
       config.R_GROUP,
       this.vmname,
     );
-    logger.info("start_server", result);
+    logger.info("server successfully started ?");
     const end = performance.now();
+    this.online = true;
     return Math.round(((end - start) / 1000) * 10) / 10;
   }
 
   public async stopServer() {
-    const res = await getServerResponse();
-    if (!res.online) {
+    if (!this.online) {
       return -1;
     }
     const start = performance.now();
-    const result = await this.client.virtualMachines.beginPowerOffAndWait(
+    logger.info("stopping server...");
+    await this.client.virtualMachines.beginPowerOffAndWait(
       config.R_GROUP,
       this.vmname,
     );
-    logger.info("stop_server", result);
+    logger.info("server stopped ?");
     const end = performance.now();
+    this.online = false;
     return Math.round(((end - start) / 1000) * 10) / 10;
+  }
+
+  private async getStatus() {
+    const res = await this.client.virtualMachines.instanceView(
+      config.R_GROUP,
+      this.vmname,
+    );
+    // response looks like this
+    // [
+    //     {
+    //       code: 'ProvisioningState/succeeded',
+    //       level: 'Info',
+    //       displayStatus: 'Provisioning succeeded',
+    //       time: 2024-04-07T03:25:16.844Z
+    //     },
+    //     {
+    //       code: 'PowerState/running',
+    //       level: 'Info',
+    //       displayStatus: 'VM running'
+    //     }
+    //   ]
+    logger.info("server-status", res.statuses);
+    const code = res.statuses?.[1]?.code;
+    return code === "PowerState/running";
+  }
+
+  public isOnline() {
+    return this.online;
+  }
+}
+const round2 = (num: number) => Math.round(num * 10) / 10;
+
+class ServerPoller {
+  expiration: number | undefined;
+  players: string[] | undefined;
+  online: boolean;
+  host: string;
+  port: number;
+  options: { query: boolean };
+
+  constructor() {
+    this.expiration = undefined;
+    this.players = undefined;
+    this.online = false;
+    this.host = config.HOST_IP;
+    this.port = 25565;
+    this.options = { query: false };
+  }
+
+  public async pollServer() {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const res = await this.getServerResponse();
+      // poll every 1:30 minutes
+      this.online = res.online;
+      this.expiration = res.expires_at;
+      this.players = res.players?.list.map((member) => member.name_clean);
+      this.online = res.online;
+      logger.info("polling server", {
+        online: this.online,
+        players: this.players,
+        expiration: this.expiration,
+      });
+      await new Promise((r) => setTimeout(r, 90000));
+    }
+  }
+  public getServerStatus() {
+    const expiration = round2(((this.expiration ?? 0) - Date.now()) / 1000);
+    return {
+      online: this.online,
+      players: this.players,
+      expiration: expiration,
+    };
+  }
+
+  public async ServerInactivePoweroffHook() {
+    let inactive = false;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      await new Promise((r) => setTimeout(r, 20 * 60000));
+      if ((this.players?.length ?? 0) > 0) {
+        inactive = false;
+      } else {
+        logger.info("server inactive, powering off", {
+          online: this.online,
+          players: this.players,
+          expiration: this.expiration,
+          inactive: inactive,
+        });
+        inactive ? await VM.stopServer() : (inactive = true);
+        break;
+      }
+    }
+  }
+
+  private async getServerResponse() {
+    const res = await statusJava(this.host, this.port, this.options);
+    return res;
   }
 }
 
-export const VM = new VMInstance();
+export const VM = await VMInstance.getInstance();
+export const SERVER = new ServerPoller();
+
+SERVER.ServerInactivePoweroffHook();
+SERVER.pollServer();
