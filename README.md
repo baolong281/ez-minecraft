@@ -1,7 +1,7 @@
 # ez-minecraft
 
 To install dependencies:
-
+im goated
 ```bash
 bun install
 ```
