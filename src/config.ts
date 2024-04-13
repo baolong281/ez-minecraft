@@ -8,10 +8,13 @@ const requiredVariables = [
   "HOST_IP",
   "SUB_ID",
   "R_GROUP",
+  // generate later
+  "SUPABASE_URL",
+  "SUPABASE_KEY",
 ];
 
 const missingVariables = requiredVariables.filter(
-  (variable) => !process.env[variable]
+  (variable) => !process.env[variable],
 );
 
 if (missingVariables.length > 0) {
@@ -26,4 +29,6 @@ export const config = {
   HOST_IP: process.env["HOST_IP"]!,
   SUB_ID: process.env["SUB_ID"]!,
   R_GROUP: process.env["R_GROUP"]!,
+  SUPABASE_URL: process.env["SUPABASE_URL"]!,
+  SUPABASE_KEY: process.env["SUPABASE_KEY"]!,
 };
