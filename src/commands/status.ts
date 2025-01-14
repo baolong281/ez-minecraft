@@ -1,30 +1,9 @@
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  CommandInteraction,
-  SlashCommandBuilder,
-} from "discord.js";
-import { SERVER, VM } from "../vm";
+import { CommandInteraction, SlashCommandBuilder } from "discord.js";
+import { SERVER } from "../poller";
 
 export const data = new SlashCommandBuilder()
   .setName("status")
   .setDescription("Check server status");
-
-const confirm = new ButtonBuilder()
-  .setCustomId("confirm")
-  .setLabel("Confirm")
-  .setStyle(ButtonStyle.Success);
-
-const cancel = new ButtonBuilder()
-  .setCustomId("cancel")
-  .setLabel("Cancel")
-  .setStyle(ButtonStyle.Danger);
-
-const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-  confirm,
-  cancel,
-);
 
 // todo
 export async function execute(interaction: CommandInteraction) {
@@ -52,43 +31,5 @@ export async function execute(interaction: CommandInteraction) {
             : ""),
       );
     }
-  }
-
-  const response = await interaction.editReply({
-    content: "Server is offline. Would you like to start the server?",
-    components: [row],
-  });
-
-  const collectorFilter = (i: { user: { id: string } }) =>
-    i.user.id === interaction.user.id;
-
-  try {
-    const confirmation = await response.awaitMessageComponent({
-      filter: collectorFilter,
-      time: 30_000,
-    });
-
-    // todo
-    if (confirmation.customId === "confirm") {
-      await interaction.editReply({
-        content: "Server is starting...",
-        components: [],
-      });
-      const time = await VM.startServer();
-      await interaction.editReply({
-        content: `Server started in **${time}** seconds`,
-        components: [],
-      });
-    } else {
-      await interaction.editReply({
-        content: "Server start cancelled",
-        components: [],
-      });
-    }
-  } catch (e) {
-    await interaction.editReply({
-      content: "Confirmation not received within 30 seconds, cancelling",
-      components: [],
-    });
   }
 }

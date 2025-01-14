@@ -1,5 +1,4 @@
 import { CommandInteraction, SlashCommandBuilder } from "discord.js";
-import { VM } from "../vm";
 
 export const data = new SlashCommandBuilder()
   .setName("start")
@@ -7,10 +6,5 @@ export const data = new SlashCommandBuilder()
 
 // todo
 export async function execute(interaction: CommandInteraction) {
-  await interaction.deferReply();
-  const time = await VM.startServer();
-  if (time == -1) {
-    return interaction.editReply("❌ Server is already running");
-  }
-  return interaction.editReply(`Server started in **${time}** seconds`);
+  return interaction.reply("this doesn't exist anymore");
 }
